@@ -3,12 +3,27 @@
 #include "fiducial_msgs/FiducialTransformArray.h"
 
 
+ros::Publisher* chatter_pub;
+
 void marker_3d_t_r(const fiducial_msgs::FiducialTransformArray &msg)
 {
   for(int i=0; i<msg.transforms.size() ; i++)
   {
+  	ROS_INFO("%d", i);
     ROS_INFO("TRANS_X : %f", msg.transforms[i].transform.translation.x);
     
+    geometry_msgs::Twist move;
+
+		if(msg.transforms[0].transform.translation.x> -0.05)
+		{
+			move.linear.x = 0.1;
+		}
+		else
+		{
+			move.linear.x = 0;
+		}
+    chatter_pub->publish(move);
+
     /*
     ROS_INFO("MARKER_ID : %d", msg.transforms[i].fiducial_id);
     ROS_INFO("TRANS_X : %f", msg.transforms[i].transform.translation.x);
@@ -25,45 +40,22 @@ void marker_3d_t_r(const fiducial_msgs::FiducialTransformArray &msg)
 }
 
 
-
 int main(int ac, char **av)
 {
 	ros::init(ac, av, "omo_control_pub");
 
 	ros::NodeHandle n;
-	ros::Publisher chatter_pub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 100);
+
+	ros::Publisher temp_pub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 100);
+	chatter_pub = &temp_pub;
+	
 	ros::Subscriber sub = n.subscribe("/fiducial_transforms", 10, marker_3d_t_r);
 
 	ros::Rate loop_rate(10);
 
-
-	geometry_msgs::Twist move;
-	fiducial_msgs::FiducialTransformArray msg;
 	while(ros::ok())
 	{
-
-
-		
-		for(int i=0; i<msg.transforms.size() ; i++)
-  	{
-			if(msg.transforms[i].transform.translation.x> -0.05)
-			{
-				move.linear.x = 0.1;
-				chatter_pub.publish(move);
-			}
-			else if(msg.transforms[i].transform.translation.x<= -0.05)
-			{
-				move.linear.x = 0;
-				chatter_pub.publish(move);
-			}
-			else
-				return 0;
-		}
-		
-		ROS_INFO("vel : %f", move.linear.x);
-
 		ros::spinOnce();
 		loop_rate.sleep();
-
 	}
 }
