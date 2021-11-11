@@ -7,6 +7,9 @@ void marker_3d_t_r(const fiducial_msgs::FiducialTransformArray &msg)
 {
   for(int i=0; i<msg.transforms.size() ; i++)
   {
+    ROS_INFO("TRANS_X : %f", msg.transforms[i].transform.translation.x);
+    
+    /*
     ROS_INFO("MARKER_ID : %d", msg.transforms[i].fiducial_id);
     ROS_INFO("TRANS_X : %f", msg.transforms[i].transform.translation.x);
     ROS_INFO("TRANS_Y : %f", msg.transforms[i].transform.translation.y);
@@ -16,7 +19,7 @@ void marker_3d_t_r(const fiducial_msgs::FiducialTransformArray &msg)
     ROS_INFO("QUATER_Z : %f", msg.transforms[i].transform.rotation.z);
     ROS_INFO("QUATER_W : %f", msg.transforms[i].transform.rotation.w);
     ROS_INFO("====================");
-
+		*/
   }
 
 }
@@ -34,18 +37,32 @@ int main(int ac, char **av)
 	ros::Rate loop_rate(10);
 
 
+	geometry_msgs::Twist move;
+	fiducial_msgs::FiducialTransformArray msg;
 	while(ros::ok())
 	{
 
-		geometry_msgs::Twist move;
 
-		move.linear.x = 0.1;
+		
+		for(int i=0; i<msg.transforms.size() ; i++)
+  	{
+			if(msg.transforms[i].transform.translation.x> -0.05)
+			{
+				move.linear.x = 0.1;
+				chatter_pub.publish(move);
+			}
+			else if(msg.transforms[i].transform.translation.x<= -0.05)
+			{
+				move.linear.x = 0;
+				chatter_pub.publish(move);
+			}
+			else
+				return 0;
+		}
+		
+		ROS_INFO("vel : %f", move.linear.x);
 
-		chatter_pub.publish(move);
-		ROS_INFO("%f", move.linear.x);
 		ros::spinOnce();
-
-
 		loop_rate.sleep();
 
 	}
