@@ -10,11 +10,11 @@ void marker_3d_t_r(const fiducial_msgs::FiducialTransformArray &msg)
   for(int i=0; i<msg.transforms.size() ; i++)
   {
   	ROS_INFO("%d", i);
-    ROS_INFO("TRANS_X : %f", msg.transforms[i].transform.translation.x);
+    ROS_INFO("TRANS_Z : %f", msg.transforms[i].transform.translation.z);
     
     geometry_msgs::Twist move;
 
-		if(msg.transforms[0].transform.translation.x> -0.05)
+		if(msg.transforms[0].transform.translation.z> 1)
 		{
 			move.linear.x = 0.1;
 		}
